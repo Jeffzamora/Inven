@@ -57,7 +57,6 @@ class AreaAdmin(admin.ModelAdmin):
 
 @admin.register(Proceso)
 class ProcesoAdmin(admin.ModelAdmin):
-    form = ProcesoForm
     list_display = ["Area", 'Sede', "name", "code", "date_joined"]
     search_fields = ["Area__name",  'Sede__name',  "name", "code"]
     list_filter = ["Area", "name", "code"]
@@ -77,7 +76,6 @@ class ProcesoAdmin(admin.ModelAdmin):
 
 @admin.register(Serie)
 class SerieAdmin(admin.ModelAdmin):
-    form = SerieForm
     list_display = ["Sede", 'Area', "Proceso", "name", "code", "date_joined"]
     search_fields = ["Sede__name", "Area__name", "Proceso__name", "name", "code"]
     list_filter = ["Proceso", "name", "code", "date_joined"]
@@ -100,9 +98,8 @@ class SerieAdmin(admin.ModelAdmin):
 
 @admin.register(sub_Serie)
 class sub_SerieAdmin(admin.ModelAdmin):
-    form = sub_SerieForm
-    list_display = ["Sede", "Area", "Proceso", 'Serie', "name", "code", "date_joined"]
-    search_fields = ["Sede__name", "Area__name", "Proceso__name", "Serie__name", "name", "code"]
+    list_display = ["Sede", "Area", 'Serie', "name", "code", "date_joined"]
+    search_fields = ["Sede__name", "Area__name", "Serie__name", "name", "code"]
     list_filter = ['Serie', "name", "code", "date_joined"]
     formfield_overrides = {
         # models.CharField: {'widget': Textarea(attrs={'style': 'width:90%', 'rows': 5})},

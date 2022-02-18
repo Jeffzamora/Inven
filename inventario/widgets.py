@@ -11,13 +11,13 @@ from user.models import *
 #         return value
 #
 #
-# class AreaWidget(Widget):
-#     template_name = 'widgets/department.html'
-#
-#     def format_value(self, value):
-#         if value:
-#             return Area.objects.get(id=value)
-#         return value
+class AreaWidget(Widget):
+    template_name = 'proceso.html'
+
+    def format_value(self, value):
+        if value:
+            return Area.objects.get(id=value)
+        return value
 #
 #
 # class FormBoxWidget(Widget):
