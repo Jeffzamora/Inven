@@ -1,0 +1,31 @@
+.indicadores {
+  font-size: 1.5em;
+  display: flex;
+  flex-wrap: wrap;
+
+  table.indicador {
+    background-color: #ededed;
+    border: 1px solid #bbb;
+    margin: 0 20px;
+    min-width: 400px;
+    max-width: 400px;
+
+    th {
+      padding: 10px 20px;
+      text-align: center;
+      font-weight: bold;
+      background-color: #c3c3c3;
+      background-image: linear-gradient(top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+    }
+
+    td {
+      padding: 10px 20px;
+      min-width: 150px;
+      border: 1px solid #bbb;
+
+      &.numeric {
+        text-align: right;
+      }
+    }
+  }
+}

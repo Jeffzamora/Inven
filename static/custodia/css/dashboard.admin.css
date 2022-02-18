@@ -1,0 +1,29 @@
+.indicadores {
+  font-size: 1.5em;
+  display: flex;
+  flex-wrap: wrap;
+}
+.indicadores table.indicador {
+  background-color: #ededed;
+  border: 1px solid #bbb;
+  margin: 0 20px;
+  min-width: 400px;
+  max-width: 400px;
+}
+.indicadores table.indicador th {
+  padding: 10px 20px;
+  text-align: center;
+  font-weight: bold;
+  background-color: #c3c3c3;
+  background-image: linear-gradient(top, white, rgba(255, 255, 255, 0));
+}
+.indicadores table.indicador td {
+  padding: 10px 20px;
+  min-width: 150px;
+  border: 1px solid #bbb;
+}
+.indicadores table.indicador td.numeric {
+  text-align: right;
+}
+
+/*# sourceMappingURL=dashboard.admin.css.map */

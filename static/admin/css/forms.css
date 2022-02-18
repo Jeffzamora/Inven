@@ -1,0 +1,16 @@
+input[readonly=readonly], textarea[readonly=readonly], select[readonly=readonly] {
+  pointer-events: none;
+  background-color: #eee;
+}
+
+select[readonly=readonly] {
+  border-color: #eee !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+}
+
+select[readonly=readonly]::-ms-expand {
+  display: none !important;
+}
+
+/*# sourceMappingURL=forms.css.map */

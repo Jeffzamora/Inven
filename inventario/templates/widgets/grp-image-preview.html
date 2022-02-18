@@ -1,0 +1,10 @@
+{% load grp_forms %}
+
+{% if widget.value %}
+    {% with widget.value|as_field:widget.attrs.mediafile as mediafile %}
+        {% if mediafile %}
+            <iframe src="{% url 'media' %}?app_label=inventario&model_name={{ widget.attrs.modelname }}&primary_key={{ widget.value.id }}"
+                    width=900 height=900></iframe>
+        {% endif %}
+    {% endwith %}
+{% endif %}

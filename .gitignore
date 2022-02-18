@@ -1,0 +1,8 @@
+/venv
+*.json
+*.pyc
+*.pyo
+/.idea
+/media
+/components
+/logicsa/environment.conf

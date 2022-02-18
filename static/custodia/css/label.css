@@ -1,0 +1,23 @@
+
+.label {
+    page-break-after: always;
+    height: 25.4mm;
+    width: 80mm;
+    display: grid;
+    grid-template-columns: 20mm 50mm;
+    justify-content: center;
+    align-items: center;
+}
+
+.label .barcode {
+    transform: scale(1.2);
+}
+
+.label .info {
+    vertical-align: middle;
+}
+
+.label .info p {
+    margin: 0;
+    padding: 0;
+}
