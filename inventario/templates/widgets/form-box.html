@@ -1,0 +1,39 @@
+<select name="{{ widget.name }}" id="{{ widget.attrs.id }}">
+    <option value="" {% if not widget.value %}selected{% endif %}>--------</option>
+    {% if widget.value %}
+        {% for template in widget.value.template %}
+            <option value="{{ template.id }}"
+                    {% ifequal widget.value template %}selected{% endifequal %}>{{ template.name }}</option>
+        {% endfor %}
+
+    {% endif %}
+</select>
+
+<script type="text/javascript">
+    (function ($) {
+        $(document).ready(function () {
+            $(document).on('change', '{{ widget.attrs.Area_selector }}', function () {
+                const _this = $(this);
+                const Area = $('#{{ widget.attrs.id }}')
+                    .empty()
+                    .append(`<option value="">---------</option>`);
+                if (_this.val() !== undefined && _this.val() !== '') {
+                    $.ajax($ajax_getColletion, {
+                        method: "POST",
+                        data: {
+                            app_label: 'inventario', model: 'formbox',
+                            filters: `{'area_id': '${_this.val()}'}`
+                        },
+                        success: function (response) {
+                            $.each(response, function (i, Area) {
+                                $Area.append(`
+                                <option value="${Area.id}">${Area.name}</option>
+                            `)
+                            })
+                        }
+                    })
+                }
+            });
+        })
+    })(grp.jQuery)
+</script>

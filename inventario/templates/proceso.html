@@ -1,0 +1,37 @@
+<select name="{{ widget.name }}" id="{{ widget.attrs.id }}">
+    <option value="" {% if not widget.value %}selected{% endif %}>--------</option>
+    {% if widget.value %}
+        {% for Proceso in widget.value.Area.Proceso %}
+            <option value="{{ Proceso.id }}"
+                    {% ifequal widget.value Proceso %}selected{% endifequal %}>{{ Proceso.name }}</option>
+        {% endfor %}
+
+    {% endif %}
+</select>
+
+<script type="text/javascript">
+    (function ($) {
+        $(document).ready(function () {
+            $(document).on('change', '{{ widget.attrs.Area_selector }}', function () {
+                const _this = $(this);
+                let $Proceso = $('#{{ widget.attrs.id }}');
+                $Proceso.empty();
+                $Proceso.append(`<option value="">---------</option>`);
+                if (_this.val() !== undefined && _this.val() !== '') {
+                    $.ajax($ajax_getColletion, {
+                        method: "POST",
+                        data: {
+                            app_label: 'mrd', model: 'Proceso',
+                            filters: `{'Area_id': '${_this.val()}'}`
+                        },
+                        success: function (response) {
+                            $.each(response, function (i, Proceso) {
+                                $Proceso.append(`<option value="${Proceso.id}">${Proceso.name}</option>`)
+                            })
+                        }
+                    })
+                }
+            })
+        })
+    })(grp.jQuery)
+</script>

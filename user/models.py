@@ -30,10 +30,10 @@ class User(AbstractUser):
     celular = models.CharField(max_length=8, verbose_name='Celular')
     Comp = models.CharField(max_length=5, choices=compañia, verbose_name='Compañia')
     direccion = models.CharField(max_length=50, verbose_name='Direccion Donde habita')
-    Sede = models.ForeignKey(Sede, blank=True, null=True, on_delete=models.RESTRICT, verbose_name='Sede')
-    Area = models.ForeignKey(Area, blank=True, null=True, on_delete=models.CASCADE, verbose_name='Area')
+    Sede = models.ForeignKey(Sede, blank=True, null=True, on_delete=models.CASCADE, verbose_name='Sede')
+    Area = MultiSelectField(max_length=10000, choices=AREA(), null=True, blank=True,  # DEPARTMENTS()
+                                   verbose_name="Area")
     Proceso = models.ForeignKey(Proceso, blank=True, null=True, on_delete=models.CASCADE, verbose_name='Proceso')
-
 
     def toJSON(self):
         item = model_to_dict(self)

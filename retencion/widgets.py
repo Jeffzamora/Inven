@@ -4,22 +4,22 @@ from etiqueta.models import *
 from user.models import *
 
 
-class FormWidget(Widget):
-    template_name = 'widgets/form_template.html'
-
-    def format_value(self, value):
-        return value
-
-
-class AreaWidget(Widget):
-    template_name = 'proceso.html'
-
-    def format_value(self, value):
-        if value:
-            return Area.objects.get(id=value)
-        return value
-
-
+# class FormWidget(Widget):
+#     template_name = 'widgets/form_template.html'
+#
+#     def format_value(self, value):
+#         return value
+#
+#
+# class AreaWidget(Widget):
+#     template_name = 'widgets/department.html'
+#
+#     def format_value(self, value):
+#         if value:
+#             return Area.objects.get(id=value)
+#         return value
+#
+#
 # class FormBoxWidget(Widget):
 #     template_name = 'widgets/form-box.html'
 #
@@ -27,7 +27,7 @@ class AreaWidget(Widget):
 #         if value:
 #             return FormBox.objects.get(id=value)
 #         return value
-
+#
 #
 # class FormFileWidget(Widget):
 #     template_name = 'widgets/form-file.html'

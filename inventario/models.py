@@ -9,9 +9,11 @@ from cedoc.models import *
 from inventario.choices import *
 import os
 import json
+from json.decoder import JSONDecodeError
 from django.urls import reverse
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from user.models import *
 
 
 # from custodia.login.models import BaseModel
@@ -26,9 +28,53 @@ def get_media_path(model, filename):
     return os.path.join(class_name, code, filename)
 
 
+OBJECT_STATUS = (
+
+    ('IN', 'En custodia'),
+    ('OUT', 'Fuera de custodia'),
+    ('DELETE', 'Borrado'),
+    ('DESTROYED', 'Destruido'),
+    ('TRANSFERRED', 'Transferido'),
+
+    ('PRE ADD', 'En proceso de ingreso'),
+    ('ON_DESTRUCTION', 'En proceso de destruccion'),
+    ('ON_TRANSFER', 'En transferencia'),
+    ('ON_DELETION', 'En procedo de borrado'),
+    ('SELECTED', 'En proceso de transferencia'),
+
+    ('TRUCK', 'En solicitud de retiro'),
+    ('OUT-BOX', 'Fuera de la caja'),
+
+)
+
+
+class ObjectStatus:
+    IN = 'IN'
+    OUT = 'OUT'
+    DELETE = 'DELETE'
+    DESTROYED = 'DESTROYED'
+    TRANSFERRED = 'TRANSFERRED'
+    PRE_ADD = 'PRE ADD'
+    ON_DESTRUCTION = 'ON_DESTRUCTION'
+    ON_TRANSFER = 'ON_TRANSFER'
+    ON_DELETION = 'ON_DELETION'
+    SELECTED = 'SELECTED'
+    TRUCK = 'TRUCK'
+    OUT_BOX = 'OUT-BOX'
+
+    @classmethod
+    def choices(cls):
+        return (cls.IN, 'En custodia'), (cls.OUT, 'Fuera de custodia'), (cls.DELETE, 'Borrado'), \
+               (cls.DESTROYED, 'Destruido'), (cls.TRANSFERRED, 'Transferido'), \
+               (cls.PRE_ADD, 'En proceso de ingreso'), (cls.ON_DESTRUCTION, 'En proceso de destruccion'), \
+               (cls.ON_TRANSFER, 'En transferencia'), (cls.ON_DELETION, 'En procedo de borrado'), \
+               (cls.SELECTED, 'En proceso de transferencia'), (cls.TRUCK, 'En solicitud de retiro'), \
+               (cls.OUT_BOX, 'Fuera de la caja')
+
+
 class Caja(models.Model):
     Location = models.ForeignKey(Bodega, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Bodega")
-    Sede = models.ForeignKey(Sede, on_delete=models.CASCADE, verbose_name="Sede el Cual pertenece")
+    Sede = models.ForeignKey(Sede, on_delete=models.CASCADE, verbose_name="Sede el Cual pertenece", related_name='Cajas')
     Area = models.ForeignKey(Area, on_delete=models.CASCADE,
                              verbose_name="Area el cual pertenece")
     Proceso = models.ForeignKey(Proceso, on_delete=models.CASCADE, verbose_name="Tipo de proceso")
@@ -39,8 +85,6 @@ class Caja(models.Model):
     sub_tipo_documento = models.ForeignKey(sub_tipo_documento, null=True, blank=True, on_delete=models.CASCADE,
                                            verbose_name="Sub Tipo de Documento")
     descripcion = models.CharField(max_length=300, null=True, blank=True, verbose_name="Descripcion")
-    code = models.CharField(max_length=250, null=True, verbose_name="código / número",
-                            help_text="referencia para el cliente")
     rc = models.BigIntegerField(unique=True, verbose_name="RC")
     Serie_de = models.CharField(max_length=150, null=True, blank=True, verbose_name="Serie de:")
     Serie_hasta = models.CharField(max_length=150, null=True, blank=True, verbose_name="Serie hasta:")
@@ -50,7 +94,7 @@ class Caja(models.Model):
     year_hasta = models.CharField(max_length=5, null=True, blank=True,  choices=YEAR_CHOICES, verbose_name='Año hasta')
     fecha_inicio = models.DateField(null=True, blank=True, verbose_name="Fecha de Inicio")
     fecha_fin = models.DateField(null=True, blank=True, verbose_name="Fecha Final")
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default="Pre Agregado", verbose_name='Estatus')
+    status = models.CharField(max_length=50, choices=ObjectStatus.choices(), null=True, blank=True)
     files = models.IntegerField(null=True, blank=True)
     seguridad = models.CharField(max_length=15, choices=SEGURIDAD_CHOICES, default="Interno",
                                  verbose_name='Nivel de Seguridad')
@@ -71,6 +115,12 @@ class Caja(models.Model):
     def __str__(self):
         return '%s' % self.rc
 
+    def usuario_ultima_salida(self):
+        if self.last_out_order:
+            return self.last_out_order.user
+        else:
+            return None
+
     def folders(self):
         return Folder.objects.filter(Caja=self)
 
@@ -83,7 +133,6 @@ class Caja(models.Model):
     def obj_json(self):
         return {
             'id': self.id,
-            'code': self.code,
             'descripcion': self.descripcion,
             'template_data': self.json_template_data(),
             'status': self.status,
@@ -154,7 +203,7 @@ class Folder(models.Model):
     year_hasta = models.CharField(max_length=5, null=True, blank=True, choices=YEAR_CHOICES, verbose_name='Año hasta')
     fecha_inicio = models.DateField(null=True, blank=True, verbose_name="Fecha de Inicio")
     fecha_fin = models.DateField(null=True, blank=True, verbose_name="Fecha Final")
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default="En Custodia", verbose_name='Estatus')
+    status = models.CharField(max_length=50, choices=ObjectStatus.choices(), null=True, blank=True)
     seguridad = models.CharField(max_length=15, choices=SEGURIDAD_CHOICES, default="Interno",
                                  verbose_name='Nivel de Seguridad')
     fun = models.CharField(max_length=15, choices=FUNCIONES_CHOICES, default="Interno",
@@ -172,6 +221,21 @@ class Folder(models.Model):
     def __str__(self):
         return '%s' % self.rc
 
+    def get_end_date(self):
+        return self.caja.get_end_date()
+
+    def fecha_ultima_salida(self):
+        if self.last_out_order:
+            return self.last_out_order.created
+        else:
+            return None
+
+    def usuario_ultima_salida(self):
+        if self.last_out_order:
+            return self.last_out_order.user
+        else:
+            return None
+
     def documents_count(self):
         return self.Document.all().count()
 
@@ -180,6 +244,17 @@ class Folder(models.Model):
             return json.loads(self.template_data)
         except:
             return {}
+
+    def obj_json(self):
+        try:
+            return dict(id=self.id, code=self.code, description=self.descripcion, status=self.status,
+                        html_label="",)
+        except JSONDecodeError:
+            return dict(id=self.id, code=self.code, description=self.descripcion, status=self.status,
+                        html_label="", )
+
+    def docs(self):
+        return Document.objects.filter(file=self)
 
     def toJSON(self):
         item = model_to_dict(self)
@@ -192,7 +267,10 @@ class Folder(models.Model):
         item['tipo_documento'] = self.tipo_documento.name
         item['caja'] = self.caja.rc
         item['Retencion'] = self.Retencion.name
+        item['estado'] = self.get_status_display()
         item['date_joined'] = self.date_joined.strftime('%d-%m-%Y')
+        if self.template_data:
+            item['template_data'] = self.json_template_data()
         return item
 
     class Meta:
@@ -246,10 +324,25 @@ class Document(models.Model):
     def __str__(self):
         return '%s' % self.rc
 
+    def json_template_data(self):
+        try:
+            return json.loads(self.template_data)
+        except:
+            return {}
+
     def css_class(self):
         if self.mediafile:
             return "pdf-document"
         return "pdf-document-empty"
+
+    def obj_json(self):
+        try:
+            return dict(id=self.id, description=self.descripcion, status=self.status,
+                        html_label="",
+                        cssclass=self.css_class(),)
+        except JSONDecodeError:
+            return dict(id=self.id, description=self.descripcion, status=self.status,
+                        html_label="", cssclass=self.css_class())
 
     def to_json(self):
         item = super().to_json()
@@ -262,6 +355,7 @@ class Document(models.Model):
         item['tipo_documento'] = self.tipo_documento.name
         item['caja'] = self.caja.rc
         item['folder'] = self.folder.rc
+        item['estado'] = self.get_status_display()
         item['date_joined'] = self.date_joined.strftime('%d-%m-%Y')
         if self.mediafile:
             item['name'] = self.mediafile.name

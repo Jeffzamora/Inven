@@ -8,7 +8,16 @@ from user.models import *
 from multiselectfield import MultiSelectField as BaseMultiSelect
 
 
-# from custodia.login.models import BaseModel
+def AREA():
+    try:
+        area_choices = list()
+        for sede in Sede.objects.all():
+            area_choices += sede.departments()
+        return area_choices
+    except:
+        return (
+            ('', 'Aún no hay Areas definida'),
+        )
 
 
 class Sede(models.Model):
@@ -17,6 +26,75 @@ class Sede(models.Model):
     code = models.CharField(max_length=10, unique=True, verbose_name="Codigo de la Sede")
     name = models.CharField(max_length=300, unique=True, verbose_name="Nombre de la Sede")
     date_joined = models.DateField(default=datetime.now, verbose_name='Fecha de Registro')
+
+    def area(self):
+        return Area.objects.filter(customer=self)
+
+    def users(self):
+        return User.objects.filter(customer=self)
+
+    def box_templates(self):
+        return FormBox.objects.filter(customer=self)
+
+    def file_templates(self):
+        return FormFile.objects.filter(customer=self)
+
+    def doc_templates(self):
+        return FormDoc.objects.filter(customer=self)
+
+    def cajas_departamentos(self):
+        data = []
+        for d in self.area():
+            data.append({
+                'area': d.name,
+                'cajas': Caja.objects.filter(customer=self, department=d).count()
+            })
+        return data
+
+    def area_choices(self):
+        return tuple((d, d) for d in self.area())
+
+    def supervisors(self):
+        try:
+            return ", ".join(list(User.objects.filter(
+                customer=self).values_list('user__username', flat=True)))
+        except:
+            return ""
+
+    def boxes_count(self):
+        return self.Cajas.filter(status__in=['IN', 'OUT']).count()
+
+    def boxes_in(self):
+        return self.Cajas.filter(status='IN').count()
+
+    def boxes_out(self):
+        return self.Cajas.filter(status='OUT').count()
+
+    def boxes_delete(self):
+        return self.Cajas.filter(status='DELETE').count()
+
+    def boxes_pre_add(self):
+        return self.Cajas.filter(status='PRE ADD').count()
+
+    def boxes_otros(self):
+        return self.Cajas.exclude(status__in=['IN', 'OUT', 'DELETE', 'PRE ADD']).count()
+
+    def files(self):
+        return Folder.objects.filter(customer=self)
+
+    def files_count(self):
+        return self.files().count()
+
+    def docs(self):
+        return Document.objects.filter(customer=self)
+
+    def docs_count(self):
+        return self.docs().count()
+
+    def to_json(self):
+        o = super().to_json()
+        o['area'] = [d.to_json() for d in Area.objects.filter(customer=self)]
+        return o
 
     def __str__(self):
         return self.name
@@ -29,8 +107,6 @@ class Sede(models.Model):
 
 
 class Area(models.Model):
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
     Sede = models.ForeignKey(Sede, on_delete=models.CASCADE, verbose_name="Sede Cual pertenece")
     name = models.CharField(max_length=300, unique=True, verbose_name="Nombre del Area")
     code = models.CharField(max_length=10, unique=True, verbose_name="Codigo de Area")
@@ -38,11 +114,6 @@ class Area(models.Model):
 
     def __str__(self):
         return self.name
-
-    def toJSON(self):
-        item = model_to_dict(self)
-        item['Sede'] = self.Sede.name
-        return item
 
     class Meta:
         verbose_name = 'Area'
@@ -90,7 +161,6 @@ class Serie(models.Model):
 
     def __str__(self):
         return self.name
-
 
     def toJSON(self):
         item = model_to_dict(self)

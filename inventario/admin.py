@@ -15,7 +15,7 @@ class DocumentList(admin.TabularInline):
 
 @admin.register(Caja)
 class CajaAdmin(admin.ModelAdmin):
-    # Form = CajaForm
+    Form = CajaForm
     list_display = ["rc", "descripcion", "tipo_documento", "Location", "status", "seguridad", "Proceso"]
     search_fields = ["rc", "Sede__name", "Area__name", "Proceso__name", "tipo_documento__name", "Location__name",
                      "status", "Serie__name", "sub_Serie__name"]

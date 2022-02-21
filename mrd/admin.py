@@ -76,6 +76,7 @@ class ProcesoAdmin(admin.ModelAdmin):
 
 @admin.register(Serie)
 class SerieAdmin(admin.ModelAdmin):
+    Form = SerieForm
     list_display = ["Sede", 'Area', "Proceso", "name", "code", "date_joined"]
     search_fields = ["Sede__name", "Area__name", "Proceso__name", "name", "code"]
     list_filter = ["Proceso", "name", "code", "date_joined"]

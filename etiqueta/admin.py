@@ -1,5 +1,6 @@
 from django.contrib import admin
 from etiqueta.models import *
+from inventario.forms import *
 
 
 class FieldsBox(admin.TabularInline):
